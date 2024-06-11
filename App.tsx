@@ -1,117 +1,103 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
 import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+import {FlatList, StyleSheet, Text, View} from 'react-native';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import Card from './components/Card';
+import Animated, {
+  scrollTo,
+  useAnimatedReaction,
+  useAnimatedRef,
+  useSharedValue,
+} from 'react-native-reanimated';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-type SectionProps = PropsWithChildren<{
+interface Task {
   title: string;
-}>;
-
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
 }
 
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+const tasks: Task[] = [
+  {
+    title: 'This is the first task title',
+  },
+  {
+    title:
+      'A different task title that maybe flows onto some more lines than the first one',
+  },
+  {
+    title: 'Third task',
+  },
+  {
+    title: 'This is a task title',
+  },
+  {
+    title:
+      'A different task title that maybe flows onto some more lines than the first one',
+  },
+  {
+    title: 'Third task',
+  },
+  {
+    title: 'This is a task title',
+  },
+  {
+    title:
+      'A different task title that maybe flows onto some more lines than the first one',
+  },
+  {
+    title: 'Third task',
+  },
+];
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
+function App() {
+  const selected = useSharedValue<number | null>(null);
+  const listRef = useAnimatedRef<FlatList<Task>>();
+
+  useAnimatedReaction(
+    () => {
+      return selected.value;
+    },
+    (currentValue, previousValue) => {
+      if (
+        tasks.length > 5 &&
+        currentValue !== previousValue &&
+        currentValue !== null
+      ) {
+        scrollTo(listRef, 0, (currentValue - 1) * 100, true);
+      }
+    },
+  );
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
+    <GestureHandlerRootView style={styles.container}>
+      <Animated.FlatList<Task>
+        ref={listRef}
+        data={tasks}
+        renderItem={({item, index}) => (
+          <Card title={item.title} index={index} selected={selected} />
+        )}
+        ListHeaderComponent={() => (
+          <>
+            <Text style={styles.title}>Tasks</Text>
+            <View style={styles.header} />
+          </>
+        )}
+        ListFooterComponent={() => <View style={{marginBottom: 200}} />}
       />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+    </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  container: {
+    backgroundColor: 'white',
+    flex: 1,
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
+  title: {
+    fontSize: 44,
     fontWeight: '700',
+    marginTop: 64,
+    marginLeft: 16,
+  },
+  header: {
+    marginTop: 32,
   },
 });
 
